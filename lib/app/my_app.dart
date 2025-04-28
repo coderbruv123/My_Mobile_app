@@ -1,6 +1,6 @@
-import 'package:bca_student_app/pages/screens/My_Home_page.dart';
+import 'package:bca_student_app/app/currencyconverter_material_page.dart';
+import 'package:bca_student_app/widgets/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
-
 
 
 class MyApp extends StatelessWidget {
@@ -16,7 +16,6 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 234, 11, 11)),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Prashant First Application'),
-    );
+home: BottomNavigationBarExample(),    );
   }
 }
