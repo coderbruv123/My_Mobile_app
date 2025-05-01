@@ -1,3 +1,4 @@
+import 'package:bca_student_app/app/pages/category_detailpage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -20,7 +21,7 @@ class _CategoryPokePageState extends State<CategoryPokePage> {
   }
 
   Future<void> _fetchCategories() async {
-    const url = 'https://pokeapi.co/api/v2/type'; // Endpoint for Pokémon types
+    const url = 'https://pokeapi.co/api/v2/type'; 
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -42,7 +43,6 @@ class _CategoryPokePageState extends State<CategoryPokePage> {
       setState(() {
         _isLoading = false;
       });
-      print('Error fetching categories: $e');
     }
   }
 
@@ -81,28 +81,3 @@ class _CategoryPokePageState extends State<CategoryPokePage> {
   }
 }
 
-class CategoryDetailPage extends StatelessWidget {
-  final String categoryName;
-  final String categoryUrl;
-
-  const CategoryDetailPage({
-    super.key,
-    required this.categoryName,
-    required this.categoryUrl,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('$categoryName Pokémon'),
-      ),
-      body: Center(
-        child: Text(
-          'Details for $categoryName Pokémon will go here.',
-          style: const TextStyle(fontSize: 18),
-        ),
-      ),
-    );
-  }
-}

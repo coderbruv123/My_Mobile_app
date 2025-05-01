@@ -6,6 +6,7 @@ import '../utils/type_colors.dart';
 
 class PokemoninfoPage extends StatefulWidget {
   final Map<String, dynamic> pokemon;
+
   const PokemoninfoPage({super.key, required this.pokemon});
 
   @override
@@ -13,7 +14,7 @@ class PokemoninfoPage extends StatefulWidget {
 }
 
 class PokemoninfoPageState extends State<PokemoninfoPage> {
-  List<String> _evolutionChain = [];
+  List<Map<String, String>> _evolutionChain = [];
   bool _isLoadingEvolution = true;
 
   @override
@@ -24,23 +25,45 @@ class PokemoninfoPageState extends State<PokemoninfoPage> {
 
   Future<void> _fetchEvolutionChain() async {
     try {
-      // Fetch species data to get the evolution chain URL
-      final speciesResponse = await http.get(Uri.parse(widget.pokemon['speciesUrl']));
+      final speciesUrl = widget.pokemon['speciesUrl'];
+      final speciesResponse = await http.get(Uri.parse(speciesUrl));
+
       if (speciesResponse.statusCode == 200) {
         final speciesData = json.decode(speciesResponse.body);
-        final evolutionChainUrl = speciesData['evolution_chain']['url'];
 
-        // Fetch evolution chain data
+        final evolutionChainUrl = speciesData['evolution_chain']?['url'] ?? '';
+        if (evolutionChainUrl.isEmpty) {
+          setState(() {
+            _isLoadingEvolution = false;
+          });
+          return;
+        }
+
+        print('Fetching evolution chain data from: $evolutionChainUrl');
         final evolutionResponse = await http.get(Uri.parse(evolutionChainUrl));
+
         if (evolutionResponse.statusCode == 200) {
           final evolutionData = json.decode(evolutionResponse.body);
           final chain = evolutionData['chain'];
 
-          // Parse the evolution chain
-          List<String> evolutionChain = [];
+          List<Map<String, String>> evolutionChain = [];
           var current = chain;
           while (current != null) {
-            evolutionChain.add(current['species']['name']);
+            final speciesName = current['species']['name'];
+            print('Fetching Pokémon details for: $speciesName');
+
+            final pokemonResponse = await http.get(Uri.parse('https://pokeapi.co/api/v2/pokemon/$speciesName'));
+            String? imageUrl;
+            if (pokemonResponse.statusCode == 200) {
+              final pokemonData = json.decode(pokemonResponse.body);
+              imageUrl = pokemonData['sprites']?['front_default'];
+            }
+
+            evolutionChain.add({
+              'name': speciesName,
+              'image': imageUrl ?? 'https://via.placeholder.com/150', // Fallback to placeholder if image is null
+            });
+
             current = current['evolves_to'].isNotEmpty ? current['evolves_to'][0] : null;
           }
 
@@ -126,10 +149,24 @@ class PokemoninfoPageState extends State<PokemoninfoPage> {
                     : Column(
                         children: _evolutionChain
                             .map((evolution) => Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                  child: Text(
-                                    evolution.toUpperCase(),
-                                    style: const TextStyle(fontSize: 18),
+                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Image.network(
+                                        evolution['image']!,
+                                        height: 50,
+                                        width: 50,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Icon(Icons.error, size: 50);
+                                        },
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        evolution['name']!.toUpperCase(),
+                                        style: const TextStyle(fontSize: 18),
+                                      ),
+                                    ],
                                   ),
                                 ))
                             .toList(),

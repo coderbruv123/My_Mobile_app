@@ -34,12 +34,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   Future<void> _fetchPokemonData() async {
+  try {
     final fetchedPokemon = await PokemonService.fetchPokemonData();
+    print('Fetched Pokémon: $fetchedPokemon'); // Debug the fetched data
     setState(() {
       _pokemonList = fetchedPokemon;
       _isLoading = false;
     });
+  } catch (e) {
+    setState(() {
+      _isLoading = false;
+    });
   }
+}
 
   void _onPokemonTap(Map<String, dynamic> pokemon) {
     Navigator.push(
@@ -52,6 +59,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
 
   void _onItemTapped(int index) {
+    print('Selected Index: $index'); 
     setState(() {
       _selectedIndex = index;
     });

@@ -14,13 +14,18 @@ class PokemonService {
           final pokemonDetails = await http.get(Uri.parse(pokemon['url']));
           if (pokemonDetails.statusCode == 200) {
             final detailsData = json.decode(pokemonDetails.body);
+
+         
+
             final types = detailsData['types']
                 .map((typeInfo) => typeInfo['type']['name'])
                 .toList();
+
             fetchedPokemon.add({
               'name': pokemon['name'],
               'image': detailsData['sprites']['front_default'],
               'types': types,
+              'speciesUrl': detailsData['species']['url'], 
             });
           }
         }

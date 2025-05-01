@@ -13,6 +13,8 @@ class PokemonGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('Pokemon List: $pokemonList'); 
+
     return GridView.builder(
       padding: const EdgeInsets.all(10),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -23,9 +25,11 @@ class PokemonGrid extends StatelessWidget {
       itemCount: pokemonList.length,
       itemBuilder: (context, index) {
         final pokemon = pokemonList[index];
-        final primaryType = pokemon['types'][0]; 
-        final backgroundColor = typeColors[primaryType] ?? Colors.white;
 
+        final primaryType = (pokemon['types'] != null && pokemon['types'].isNotEmpty)
+            ? pokemon['types'][0]
+            : 'unknown'; 
+        final backgroundColor = typeColors[primaryType] ?? Colors.grey; 
         return GestureDetector(
           onTap: () => onPokemonTap(pokemon),
           child: Card(
@@ -48,7 +52,7 @@ class PokemonGrid extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  pokemon['name']!,
+                  pokemon['name'] ?? 'Unknown',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
