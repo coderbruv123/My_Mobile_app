@@ -1,6 +1,4 @@
-import 'package:bca_student_app/app/currencyconverter_material_page.dart';
 import 'package:bca_student_app/app/my_home_page.dart';
-import 'package:bca_student_app/widgets/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 
 

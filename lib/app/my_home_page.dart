@@ -1,7 +1,12 @@
-
+import 'dart:convert';
+import 'package:bca_student_app/app/PokemoninfoPage.dart';
+import 'package:bca_student_app/app/pages/category_poke.dart';
 import 'package:bca_student_app/widgets/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
+import '../services/pokemon_service.dart';
+import '../widgets/pokemon_grid.dart';
+import 'profile_page.dart';
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
@@ -12,11 +17,14 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   late final TabController _tabController;
   int _selectedIndex = 1;
+  List<Map<String, dynamic>> _pokemonList = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _fetchPokemonData();
   }
 
   @override
@@ -25,12 +33,23 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  static final List<Widget> _widgetOptions = <Widget>[
-      Text("Home Page"),
-      Text("Home Page"),
-      Text("Home Page"),
+  Future<void> _fetchPokemonData() async {
+    final fetchedPokemon = await PokemonService.fetchPokemonData();
+    setState(() {
+      _pokemonList = fetchedPokemon;
+      _isLoading = false;
+    });
+  }
 
-  ];
+  void _onPokemonTap(Map<String, dynamic> pokemon) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PokemoninfoPage(pokemon: pokemon), 
+      ),
+    );
+  }
+
 
   void _onItemTapped(int index) {
     setState(() {
@@ -47,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           children: [
             const DrawerHeader(child: Text("Menu Bar")),
             ListTile(title: const Text('Home'), onTap: () {}),
-            ListTile(title: const Text('Calender'), onTap: () {}),
+            ListTile(title: const Text('Pokemon Type'), onTap: () {}),
             ListTile(title: const Text('Profile'), onTap: () {}),
           ],
         ),
@@ -75,16 +94,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             radius: 15,
           ),
         ),
-        bottom:
-            _selectedIndex == 1
-                ? TabBar(
-                  controller: _tabController,
-                  tabs: const <Widget>[
-                    Tab(icon: Icon(Icons.home, color: Colors.black)),
-                    Tab(icon: Icon(Icons.feed, color: Colors.black)),
-                  ],
-                )
-                : null,
+        bottom: _selectedIndex == 1
+            ? TabBar(
+                controller: _tabController,
+                tabs: const <Widget>[
+                  Tab(icon: Icon(Icons.home, color: Colors.black)),
+                  Tab(icon: Icon(Icons.feed, color: Colors.black)),
+                ],
+              )
+            : null,
         actions: [
           IconButton(
             icon: const Icon(
@@ -100,18 +118,25 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ),
         ],
       ),
-
       body:
-          _selectedIndex == 1
+      _selectedIndex==0 ?
+      CategoryPokePage():
+       _selectedIndex == 2
+          ? const ProfilePage()
+          : _selectedIndex == 1
               ? TabBarView(
-                controller: _tabController,
-                children: const [
-                  Text("Home Page"),
-                  // Center(child: Text("Home Page")),
-                  Text("Feed Page"),
-                ],
-              )
-              : _widgetOptions[_selectedIndex],
+                  controller: _tabController,
+                  children: [
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : PokemonGrid(
+                            pokemonList: _pokemonList,
+                            onPokemonTap: _onPokemonTap,
+                          ),
+                    const Text("Feed Page"),
+                  ],
+                )
+              : const Center(child: Text("Other Pages")),
       bottomNavigationBar: BottomNavigationBarExample(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
@@ -119,3 +144,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     );
   }
 }
+
+
+
+
