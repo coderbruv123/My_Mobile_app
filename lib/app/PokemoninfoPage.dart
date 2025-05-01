@@ -117,11 +117,13 @@ class PokemoninfoPageState extends State<PokemoninfoPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 20),
+            // Pokémon Name
             Text(
               widget.pokemon['name'].toUpperCase() ?? 'Unknown',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
+            // Pokémon Types
             Wrap(
               spacing: 8.0,
               children: widget.pokemon['types']
@@ -135,8 +137,69 @@ class PokemoninfoPageState extends State<PokemoninfoPage> {
                   .toList(),
             ),
             const SizedBox(height: 20),
+            const Text(
+              'Description',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            FutureBuilder(
+              future: http.get(Uri.parse(widget.pokemon['speciesUrl'])),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return const Text('Failed to load description.');
+                } else {
+                  final speciesData = json.decode(snapshot.data!.body);
+                  final description = speciesData['flavor_text_entries']
+                      .firstWhere((entry) => entry['language']['name'] == 'en')['flavor_text']
+                      .replaceAll('\n', ' ')
+                      .replaceAll('\f', ' ');
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      description,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 20),
+            const SizedBox(height: 20),
+            const Text(
+              'Base Stats',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            FutureBuilder(
+              future: http.get(Uri.parse('https://pokeapi.co/api/v2/pokemon/${widget.pokemon['name']}')),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return const Text('Failed to load stats.');
+                } else {
+                  final pokemonData = json.decode(snapshot.data!.body);
+                  return Column(
+                    children: pokemonData['stats']
+                        .map<Widget>((stat) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text(
+                                '${stat['stat']['name'].toUpperCase()}: ${stat['base_stat']}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ))
+                        .toList(),
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 20),
             const Divider(thickness: 1),
             const SizedBox(height: 20),
+            // Pokémon Evolution Chain
             const Text(
               'Evolution Chain',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -146,30 +209,47 @@ class PokemoninfoPageState extends State<PokemoninfoPage> {
                 ? const CircularProgressIndicator()
                 : _evolutionChain.isEmpty
                     ? const Text('No evolution data available.')
-                    : Column(
-                        children: _evolutionChain
-                            .map((evolution) => Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                    : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: _evolutionChain.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final evolution = entry.value;
+
+                            return Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: Column(
                                     children: [
                                       Image.network(
                                         evolution['image']!,
-                                        height: 50,
-                                        width: 50,
+                                        height: 80,
+                                        width: 80,
                                         errorBuilder: (context, error, stackTrace) {
                                           return const Icon(Icons.error, size: 50);
                                         },
                                       ),
-                                      const SizedBox(width: 10),
+                                      const SizedBox(height: 5),
                                       Text(
                                         evolution['name']!.toUpperCase(),
-                                        style: const TextStyle(fontSize: 18),
+                                        style: const TextStyle(fontSize: 14),
                                       ),
                                     ],
                                   ),
-                                ))
-                            .toList(),
+                                ),
+                                // Add an arrow if it's not the last Pokémon in the chain
+                                if (index < _evolutionChain.length - 1)
+                                  const Icon(
+                                    Icons.arrow_forward,
+                                    size: 30,
+                                    color: Colors.grey,
+                                  ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
                       ),
           ],
         ),

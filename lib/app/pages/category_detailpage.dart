@@ -44,9 +44,8 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                     'name': pokemon['pokemon']['name'],
                     'url': pokemon['pokemon']['url'],
                     'image': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon['pokemon']['url'].split('/')[6]}.png',
-                    
-                    'speciesUrl': pokemon['pokemon']['url'],
-                    'types': [widget.categoryName], 
+                    'speciesUrl': 'https://pokeapi.co/api/v2/pokemon-species/${pokemon['pokemon']['url'].split('/')[6]}/', // Correct species URL
+                    'types': [widget.categoryName],
                   })
               .toList();
           _isLoading = false;
