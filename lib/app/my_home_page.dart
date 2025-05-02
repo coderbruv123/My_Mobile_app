@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'package:bca_student_app/app/PokemoninfoPage.dart';
 import 'package:bca_student_app/app/pages/category_poke.dart';
+import 'package:bca_student_app/app/pages/search_poke.dart';
 import 'package:bca_student_app/widgets/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../services/pokemon_service.dart';
 import '../widgets/pokemon_grid.dart';
 import 'profile_page.dart';
@@ -36,7 +35,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Future<void> _fetchPokemonData() async {
   try {
     final fetchedPokemon = await PokemonService.fetchPokemonData();
-    print('Fetched Pokémon: $fetchedPokemon'); // Debug the fetched data
+    print('Fetched Pokémon: $fetchedPokemon'); 
     setState(() {
       _pokemonList = fetchedPokemon;
       _isLoading = false;
@@ -141,8 +140,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             pokemonList: _pokemonList,
                             onPokemonTap: _onPokemonTap,
                           ),
-                    const Text("Feed Page"),
-                  ],
+                    SearchPoke()
+                      ],
                 )
               : const Center(child: Text("Other Pages")),
       bottomNavigationBar: BottomNavigationBarExample(
